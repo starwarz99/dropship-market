@@ -1,0 +1,198 @@
+// Prisma 7+ schema — connection URL is configured in prisma.config.ts
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// NextAuth.js v5 required models
+// ─────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  orders   Order[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────
+// Drop-shipper & Catalog models
+// ─────────────────────────────────────────────
+
+model DropShipper {
+  id              String   @id @default(cuid())
+  name            String
+  webhookSecret   String
+  stripeAccountId String?
+  defaultMarkup   Float    @default(0.20)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  products DropShipperProduct[]
+}
+
+model Category {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  defaultMarkup Float    @default(0.20)
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  products Product[]
+}
+
+model DropShipperProduct {
+  id             String   @id @default(cuid())
+  dropShipperId  String
+  externalId     String
+  title          String
+  description    String?  @db.Text
+  wholesalePrice Float
+  imageUrls      String[]
+  inventoryCount Int      @default(0)
+  rawData        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  dropShipper DropShipper @relation(fields: [dropShipperId], references: [id], onDelete: Cascade)
+  product     Product?
+
+  @@unique([dropShipperId, externalId])
+}
+
+model Product {
+  id                   String   @id @default(cuid())
+  dropShipperProductId String   @unique
+  categoryId           String?
+  name                 String
+  slug                 String   @unique
+  description          String?  @db.Text
+  imageUrls            String[]
+  markupOverride       Float?
+  sellingPrice         Float
+  isVisible            Boolean  @default(false)
+  isFeatured           Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  dropShipperProduct DropShipperProduct @relation(fields: [dropShipperProductId], references: [id], onDelete: Cascade)
+  category           Category?          @relation(fields: [categoryId], references: [id])
+  orderItems         OrderItem[]
+}
+
+// ─────────────────────────────────────────────
+// Order & Payout models
+// ─────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PayoutStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Order {
+  id                    String      @id @default(cuid())
+  userId                String
+  status                OrderStatus @default(PENDING)
+  subtotal              Float
+  total                 Float
+  stripePaymentIntentId String?     @unique
+  shippingAddress       Json
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  productId      String
+  quantity       Int
+  unitPrice      Float
+  wholesalePrice Float
+  createdAt      DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+  payout  Payout?
+}
+
+model Payout {
+  id               String       @id @default(cuid())
+  orderItemId      String       @unique
+  dropShipperId    String
+  amount           Float
+  stripeTransferId String?
+  status           PayoutStatus @default(PENDING)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+}

@@ -19,10 +19,17 @@ async function getCategories() {
 }
 
 export default async function HomePage() {
-  const [featured, categories] = await Promise.all([
-    getFeaturedProducts(),
-    getCategories(),
-  ]);
+  let featured: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
+  let categories: Awaited<ReturnType<typeof getCategories>> = [];
+
+  try {
+    [featured, categories] = await Promise.all([
+      getFeaturedProducts(),
+      getCategories(),
+    ]);
+  } catch (err) {
+    console.error("[HomePage] DB error:", err);
+  }
 
   return (
     <div>

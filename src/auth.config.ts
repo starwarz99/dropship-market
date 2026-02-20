@@ -12,10 +12,14 @@ export const authConfig: NextAuthConfig = {
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
-    Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID!,
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET!,
-    }),
+    ...(process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET
+      ? [
+          Facebook({
+            clientId: process.env.AUTH_FACEBOOK_ID,
+            clientSecret: process.env.AUTH_FACEBOOK_SECRET,
+          }),
+        ]
+      : []),
   ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {

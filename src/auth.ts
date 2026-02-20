@@ -31,14 +31,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async signIn({ user }) {
-      // Auto-promote the first admin
+      // Auto-promote matching email to ADMIN.
+      // Wrapped in try/catch so any DB error never blocks sign-in
+      // (an unhandled throw here surfaces as AccessDenied to the user).
       const adminEmail = process.env.ADMIN_EMAIL;
       if (adminEmail && user.email === adminEmail) {
-        await prisma.user.update({
-          where: { email: user.email! },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: { role: "ADMIN" as any },
-        });
+        try {
+          await prisma.user.update({
+            where: { email: user.email },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            data: { role: "ADMIN" as any },
+          });
+        } catch {
+          // Non-fatal — sign-in proceeds; role will be promoted on next attempt.
+        }
       }
       return true;
     },

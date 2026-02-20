@@ -10,12 +10,14 @@ import {
   ShoppingBag,
   CreditCard,
   Store,
+  Import,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/catalog", label: "Catalog", icon: Package },
+  { href: "/admin/aliexpress", label: "AliExpress Import", icon: Import },
   { href: "/admin/categories", label: "Categories", icon: Tag },
   { href: "/admin/dropshippers", label: "Drop-Shippers", icon: Truck },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },

@@ -63,7 +63,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             >
               <Link href="/products">All</Link>
             </Button>
-            {categories.map((cat) => (
+            {categories.map((cat: typeof categories[number]) => (
               <Button
                 key={cat.id}
                 asChild
@@ -85,7 +85,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((p) => (
+          {products.map((p: typeof products[number]) => (
             <ProductCard
               key={p.id}
               id={p.id}

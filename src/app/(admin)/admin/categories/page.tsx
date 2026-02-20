@@ -32,7 +32,7 @@ export default async function CategoriesPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {categories.map((cat) => (
+            {categories.map((cat: typeof categories[number]) => (
               <tr key={cat.id} className="hover:bg-gray-50">
                 <td className="p-4 font-medium">{cat.name}</td>
                 <td className="p-4 text-gray-500 font-mono text-sm">{cat.slug}</td>

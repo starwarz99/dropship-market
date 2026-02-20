@@ -46,7 +46,7 @@ export default async function HomePage() {
         <section className="container mx-auto px-4 py-16">
           <h2 className="text-2xl font-bold mb-8">Browse Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map((cat) => (
+            {categories.map((cat: typeof categories[number]) => (
               <Link
                 key={cat.id}
                 href={`/products?category=${cat.slug}`}
@@ -69,7 +69,7 @@ export default async function HomePage() {
             </Button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featured.map((p) => (
+            {featured.map((p: typeof featured[number]) => (
               <ProductCard
                 key={p.id}
                 id={p.id}

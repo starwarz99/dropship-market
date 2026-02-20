@@ -61,7 +61,7 @@ export default async function CatalogPage() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {unpublished.map((dsp) => (
+                {unpublished.map((dsp: typeof unpublished[number]) => (
                   <tr key={dsp.id} className="hover:bg-gray-50">
                     <td className="p-4 font-medium">{dsp.title}</td>
                     <td className="p-4 text-gray-600">{dsp.dropShipper.name}</td>
@@ -103,7 +103,7 @@ export default async function CatalogPage() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {published.map((p) => (
+                {published.map((p: typeof published[number]) => (
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="p-4 font-medium">{p.name}</td>
                     <td className="p-4 text-gray-600">{p.category?.name ?? "—"}</td>

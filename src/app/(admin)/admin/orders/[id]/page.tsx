@@ -92,7 +92,7 @@ export default async function AdminOrderDetailPage({
             </tr>
           </thead>
           <tbody className="divide-y">
-            {order.orderItems.map((item) => (
+            {order.orderItems.map((item: typeof order.orderItems[number]) => (
               <tr key={item.id}>
                 <td className="p-4 font-medium">{item.product.name}</td>
                 <td className="p-4">{item.quantity}</td>

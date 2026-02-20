@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   // Build order items with server-side prices (ignore client-side price)
   const orderItemsData = items.map((item) => {
-    const dbProduct = dbProducts.find((p) => p.id === item.productId)!;
+    const dbProduct = dbProducts.find((p: typeof dbProducts[number]) => p.id === item.productId)!;
     return {
       productId: item.productId,
       quantity: item.quantity,

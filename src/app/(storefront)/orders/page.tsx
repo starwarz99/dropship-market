@@ -31,7 +31,7 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order) => (
+          {orders.map((order: typeof orders[number]) => (
             <Link key={order.id} href={`/orders/${order.id}`}>
               <div className="border rounded-xl p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">

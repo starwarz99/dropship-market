@@ -24,15 +24,15 @@ async function getDropShippers() {
 
 export default async function AdminPayoutsPage() {
   const [payouts, dropShippers] = await Promise.all([getPayouts(), getDropShippers()]);
-  const dsMap = Object.fromEntries(dropShippers.map((ds) => [ds.id, ds.name]));
+  const dsMap = Object.fromEntries(dropShippers.map((ds: typeof dropShippers[number]) => [ds.id, ds.name]));
 
   const totalPending = payouts
-    .filter((p) => p.status === "PENDING")
-    .reduce((sum, p) => sum + p.amount, 0);
+    .filter((p: typeof payouts[number]) => p.status === "PENDING")
+    .reduce((sum: number, p: typeof payouts[number]) => sum + p.amount, 0);
 
   const totalCompleted = payouts
-    .filter((p) => p.status === "COMPLETED")
-    .reduce((sum, p) => sum + p.amount, 0);
+    .filter((p: typeof payouts[number]) => p.status === "COMPLETED")
+    .reduce((sum: number, p: typeof payouts[number]) => sum + p.amount, 0);
 
   return (
     <div>
@@ -67,7 +67,7 @@ export default async function AdminPayoutsPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {payouts.map((payout) => (
+            {payouts.map((payout: typeof payouts[number]) => (
               <tr key={payout.id} className="hover:bg-gray-50">
                 <td className="p-4 font-medium">{dsMap[payout.dropShipperId] ?? payout.dropShipperId.slice(-8)}</td>
                 <td className="p-4 text-gray-600">{payout.orderItem.product.name}</td>

@@ -75,7 +75,7 @@ export default async function OrderDetailPage({
             </tr>
           </thead>
           <tbody className="divide-y">
-            {order.orderItems.map((item) => (
+            {order.orderItems.map((item: typeof order.orderItems[number]) => (
               <tr key={item.id}>
                 <td className="p-4">
                   <Link href={`/products/${item.product.slug}`} className="font-medium hover:underline">

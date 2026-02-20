@@ -37,7 +37,7 @@ export default async function DropShippersPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {dropShippers.map((ds) => (
+            {dropShippers.map((ds: typeof dropShippers[number]) => (
               <tr key={ds.id} className="hover:bg-gray-50">
                 <td className="p-4 font-medium">{ds.name}</td>
                 <td className="p-4 text-gray-600">{ds._count.products}</td>

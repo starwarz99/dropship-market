@@ -46,7 +46,7 @@ export default async function AdminOrdersPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {orders.map((order) => (
+            {orders.map((order: typeof orders[number]) => (
               <tr key={order.id} className="hover:bg-gray-50">
                 <td className="p-4">
                   <Link href={`/admin/orders/${order.id}`} className="font-mono text-xs text-primary hover:underline">

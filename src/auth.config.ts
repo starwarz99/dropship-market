@@ -4,9 +4,11 @@ import Facebook from "next-auth/providers/facebook";
 
 /**
  * Edge-compatible auth config (no Prisma imports).
- * Used in middleware only.
+ * Used in middleware only. Must use JWT strategy so the Edge runtime
+ * can verify sessions without a database connection.
  */
 export const authConfig: NextAuthConfig = {
+  session: { strategy: "jwt" },
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID!,

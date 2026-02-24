@@ -1,39 +1,22 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import Facebook from "next-auth/providers/facebook";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
-  providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
-    ...(process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET
-      ? [
-          Facebook({
-            clientId: process.env.AUTH_FACEBOOK_ID,
-            clientSecret: process.env.AUTH_FACEBOOK_SECRET,
-          }),
-        ]
-      : []),
-  ],
+  // JWT strategy: session is a signed token the Edge middleware can verify
+  // without a database connection. PrismaAdapter still handles user/account
+  // creation; sessions just aren't stored in the DB Session table.
+  session: { strategy: "jwt" },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user) {
-        session.user.id = user.id;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        session.user.role = (user as any).role ?? "CUSTOMER";
-      }
-      return session;
-    },
+    // Keep the authorized callback from authConfig
+    ...authConfig.callbacks,
+
     async signIn({ user }) {
       // Auto-promote matching email to ADMIN.
-      // Wrapped in try/catch so any DB error never blocks sign-in
-      // (an unhandled throw here surfaces as AccessDenied to the user).
+      // Wrapped in try/catch so any DB error never blocks sign-in.
       const adminEmail = process.env.ADMIN_EMAIL;
       if (adminEmail && user.email === adminEmail) {
         try {
@@ -48,9 +31,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true;
     },
-  },
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
+
+    async jwt({ token, user }) {
+      // `user` is only present on the initial sign-in. Re-fetch from DB so
+      // we pick up the role that the signIn callback may have just set.
+      if (user?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        token.id = user.id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.role = (dbUser?.role as any) ?? "CUSTOMER";
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        session.user.role = (token.role as any) ?? "CUSTOMER";
+      }
+      return session;
+    },
   },
 });

@@ -4,8 +4,12 @@ import Facebook from "next-auth/providers/facebook";
 
 /**
  * Edge-compatible auth config (no Prisma imports).
- * Used in middleware only. Must use JWT strategy so the Edge runtime
- * can verify sessions without a database connection.
+ * Used in middleware AND extended by auth.ts.
+ *
+ * IMPORTANT: session + jwt callbacks must live here so the Edge middleware's
+ * NextAuth(authConfig) instance can build a proper session from the JWT cookie.
+ * Without them, auth.user is undefined in the middleware and every protected
+ * route redirects to sign-in even when the user is logged in.
  */
 export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
@@ -24,6 +28,18 @@ export const authConfig: NextAuthConfig = {
       : []),
   ],
   callbacks: {
+    // Runs on every request in the middleware to build auth.user from the JWT.
+    // No Prisma — just maps fields already stored in the token.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async session({ session, token }: any) {
+      if (session.user) {
+        session.user.id = (token.id ?? token.sub) as string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        session.user.role = (token.role as any) ?? "CUSTOMER";
+      }
+      return session;
+    },
+
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isAdmin = (auth?.user as { role?: string } | undefined)?.role === "ADMIN";
